@@ -1,68 +1,92 @@
 import React, { useState, useEffect } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { Button, Container, CssBaseline, Typography } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import './App.css';
 
-function App() {
+const emotions = [
+  "Happy", "Sad", "Angry", "Surprised", "Excited", "Fearful", "Relaxed", "Confused"
+];
+
+const theme = createTheme();
+
+const App = () => {
   const [currentEmotion, setCurrentEmotion] = useState('');
   const [options, setOptions] = useState([]);
 
-  const emotions = ['Happy', 'Sad', 'Excited', 'Angry', 'Surprised', 'Calm']; // List of emotions
-
   useEffect(() => {
     startGame();
-  }, []); // Run only once on component mount
+  }, []); // Run once on component mount
 
   const startGame = () => {
-    const randomIndex = Math.floor(Math.random() * emotions.length);
-    const selectedEmotion = emotions[randomIndex];
+    // Choose a random emotion
+    const newEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+    setCurrentEmotion(newEmotion);
 
-    setCurrentEmotion(selectedEmotion);
-
-    const randomOptions = emotions
-      .filter(emotion => emotion !== selectedEmotion)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 2);
-
-    randomOptions.push(selectedEmotion);
-    randomOptions.sort(() => Math.random() - 0.5);
-
-    setOptions(randomOptions);
+    // Generate two random emotions for options
+    const newOptions = generateRandomOptions(newEmotion);
+    setOptions(newOptions);
   };
 
-  const checkAnswer = (selectedOption) => {
-    if (selectedOption === currentEmotion) {
-      alert('Correct!');
-    } else {
-      alert('Incorrect. Try again!');
+  const generateRandomOptions = (correctEmotion) => {
+    const newOptions = [];
+    
+    while (newOptions.length < 2) {
+      const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+      if (randomEmotion !== correctEmotion && !newOptions.includes(randomEmotion)) {
+        newOptions.push(randomEmotion);
+      }
     }
 
-    startGame();
+    newOptions.push(correctEmotion); // Add the correct emotion to options
+    return shuffleArray(newOptions);
+  };
+
+  const shuffleArray = (array) => {
+    // Fisher-Yates shuffle algorithm
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  };
+
+  const checkAnswer = (selectedEmotion) => {
+    if (selectedEmotion === currentEmotion) {
+      alert("Correct! Let's try another one.");
+      startGame();
+    } else {
+      alert("Incorrect. Try again!");
+    }
   };
 
   return (
-    <div className="App">
-      <div className="container mt-5">
-        <div className="card shadow-lg p-3 mb-5 bg-white rounded">
-          <div className="card-body">
-            <h1 className="card-title text-center mb-4 display-4">Emotion Game</h1>
-            <h2 className="card-subtitle text-center mb-4">Select the synonym for:</h2>
-            <h3 className="card-title text-center mb-4 display-3">{currentEmotion}</h3>
-            <div className="d-flex justify-content-center">
-              {options.map((option, index) => (
-                <button
-                  key={index}
-                  className="btn btn-outline-primary btn-lg m-2"
-                  onClick={() => checkAnswer(option)}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Container component="main" maxWidth="xs">
+        <div className="paper">
+          <Typography component="h1" variant="h5" id="game-title">
+            Word Game
+          </Typography>
+          <Typography component="h2" variant="h6" id="emotion-word">
+            {currentEmotion}
+          </Typography>
+          <div id="options">
+            {options.map((option, index) => (
+              <Button
+                key={index}
+                variant="contained"
+                color="success" // Green color
+                onClick={() => checkAnswer(option)}
+                fullWidth
+              >
+                {option}
+              </Button>
+            ))}
           </div>
         </div>
-      </div>
-    </div>
+      </Container>
+    </ThemeProvider>
   );
-}
+};
 
 export default App;
